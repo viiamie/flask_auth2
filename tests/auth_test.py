@@ -26,10 +26,10 @@ def test_register_success(client):
     # successful registration redirects to the login page
     response = client.post("register", data={"email": "email@email.com", "password": "0123456",
                                              "confirm": "0123456"})
-    assert "/login" == response.headers["Location"]
     # checks if user is inserted in database
     with client.application.app_context():
         assert User.query.filter_by(email="email@email.com").first() is not None
+    assert "/login" == response.headers["Location"]
 
 def test_login_success(client):
     """This tests for successful login"""
@@ -44,17 +44,23 @@ def test_login_success(client):
         assert session['_user_id'] == user_id
 
 
-def test_register_badPassword(client):
+def test_register_badPassword_matching(client):
     """This tests a bad password that does not match (registration)"""
     response = client.post("/register", data={"email": "test@email.com", "password": "0123456",
                                               "confirm": "0246810"}, follow_redirects=True)
     assert b"Passwords must match" in response.data
 
-def test_register_badPassword2(client):
+@pytest.mark.parametrize(
+    ("email", "password", "confirm"),
+    (("test@email.com", "abc", "abc"),
+     ("test@email.com", "1", "1")),
+)
+def test_register_badPassword_criteria(client, email, password, confirm):
     """This tests a bad password that does not meet the criteria (registration)"""
-    response = client.post("/register", data={"email": "test@email.com", "password": "1",
-                                              "confirm": "1"}, follow_redirects=True)
-    assert b"Password must be between 6 and 8 characters" in response.data
+    response = client.post("/register", data=dict(email=email, password=password, confirm=confirm),
+                           follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Must be 6 or more characters" in response.data
 
 def test_register_badEmail(client):
     """This tests an invalid email being used for registration"""
