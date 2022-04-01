@@ -23,6 +23,7 @@ class register_form(FlaskForm):
 
     password = PasswordField('Create Password', [
         validators.DataRequired(),
+        validators.length(min=6, max=35),
         validators.EqualTo('confirm', message='Passwords must match'),
 
     ], description="Create a password ")
@@ -33,7 +34,6 @@ class register_form(FlaskForm):
 class profile_form(FlaskForm):
     about = TextAreaField('About', [validators.length(min=6, max=300)],
                           description="Please add information about yourself")
-
     submit = SubmitField()
 
 class user_edit_form(FlaskForm):
@@ -51,6 +51,7 @@ class security_form(FlaskForm):
 
     password = PasswordField('Create Password', [
         validators.DataRequired(),
+        validators.length(min=6, max=35),
         validators.EqualTo('confirm', message='Passwords must match'),
 
     ], description="Create a password ")
